@@ -11,42 +11,55 @@ Why do species live where they do?
 ========================================================
 - What species will we find in unexplored conditions?
 - Which species can co-occur?
+- What drives co-occurrence patterns?
 
 
 
 ========================================================
-incremental: true
+# This would be much easier to study if we had models that generated realistic assemblages
 
-# Null models:
-## Simulate assemblages from *intentionally unrealistic* rules
-* Study differences between simulations and reality
-
-<br></br>
-
-# Alternative approach:
-## Simulate *realistic* assemblages
-* Use models as simplified proxies for reality
 
 ========================================================
 # We don't have good general-purpose methods for simulating realistic assemblages
 // examples of recent papers 
 
-Generating realistic assemblages: today's roadmap:
-========================================================
-## - Model criteria and goals
-## - Key ingredients
-## - Examples
 
-Two criteria:
+What makes a good assemblage model?
 ========================================================
 incremental: true
+</br>
+
 ## - Out-of-sample accuracy
-* Necessary condition for treating the model as a proxy for reality
 
-
-## - Connection to the biology
-* Can specify ecological hypotheses using model structure
+## - Mechanistic interpretation
+* Can specify ecological hypotheses using model structure 
 * Can build in ecological knowledge from other sources
 
-Key ingredients :
+
+Ingredients
 ========================================================
+incremental: true
+* Measured environmental predictors
+* Unobserved environmental "features"
+* One-to-many mapping from predictors to assemblages
+* Correlations among species and sites
+
+
+Contributions (1):
+========================================================
+* Better species-level predictions (especially for rare species)
+* Confidence intervals
+* One-to-many mapping
+* Summarize environment from taxon's perspective
+  * Inferences about unmeasured variables
+
+Contributions (2):
+========================================================
+* Accommodates multiple sources of information
+  * Partial observations
+	* Nearby observations
+	* Species similarities
+  
+Contributions (3):
+========================================================
+* 312 species distribution models in 60 seconds

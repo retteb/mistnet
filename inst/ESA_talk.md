@@ -29,8 +29,6 @@ Underlying questions:
 ## What's missing: general-purpose methods for generating realistic species assemblages
 
 
-
-What makes a good model?
 ========================================================
 incremental: true
 
@@ -47,47 +45,96 @@ incremental: true
 * Can specify ecological hypotheses using model structure 
 * Can build in ecological knowledge from other sources
 
-========================================================
-# One common approach:
-## "Stacks" of single-species models
-
-Combining single-species models is challenging:
+One common approach to modeling assemblages:
 ========================================================
 incremental: true
+## "Stacks" of single-species distribution models
 * Species aren't independent
-  * Species may respond to the same factors
+  * Multiple species may respond to the same factors
   * Species may interact with one another
-  * Species are related
 * Spend degrees of freedom re-learning each species' response to the environment
 
-## Can't capture correlations without a multi-species model
+## Single-species models can't assess co-occurrence
 
-2005: An early assemblage model
+
 ========================================================
-## MARS (Leathwick and Elith 2005)
+incremental: true
+# Species Assemblage Models (SAMs)
+</br>
 
-Pros:
-* Very computationally efficient
-* Identifies key environmental features
-* Often more accurate than single-species models
+## Input: environmental data for a site (if available)
 
-Cons:
-* Occasionally overfits catastrophically
-* No co-occurrence model
+</br>
 
-2012: Adding constraints on co-occurring species pairs
+## Output: likely species compositions for that site
+
+
+// My Standard Diagram
 ========================================================
+X-->Z-->Y
+
+========================================================
+* Choose model form (e.g. decision trees or neural nets)
+* Optimize the model's log-probability of generating the observed data
 
 
 
-2013: Adding stochastic latent variables
+
+Adding constraints on co-occurring species pairs
+========================================================
+[[add arrows to diagram from previous slide]]
+
+
+========================================================
+left: 20%
+
+* Breeding Bird Survey
+* Worldclim climate data
+
+****
+![a](map.png)
+
+
+Allowing for unobserved environmental drivers
 ========================================================
 <small>(currently in review at PNAS)</small>
 
 
+![plot of chunk suitability](ESA_talk-figure/suitability.png) 
+
+
+Allowing for unobserved environmental drivers
+========================================================
+<small>(currently in review at PNAS)</small>
+
+![plot of chunk suitability2](ESA_talk-figure/suitability2.png) 
+
+
+Allowing for unobserved environmental drivers
+========================================================
+<small>(currently in review at PNAS)</small>
+
+
+
+Allowing for unobserved environmental drivers
+========================================================
+<small>(currently in review at PNAS)</small>
+
+
+
+**Top 30 species:** Sora, American Coot, Redhead, Ruddy Duck, Northern Shoveler, Yellow-headed Blackbird, Gadwall, Blue-winged Teal, Canvasback, Ring-necked Duck, Bufflehead, Marsh Wren, Lesser Scaup, American Bittern, Nelson's Sparrow, Willet, Black-crowned Night-Heron, American White Pelican, American Wigeon, Canada Goose, Wilson's Snipe, Wilson's Phalarope, Common Goldeneye, Northern Pintail, Green-winged Teal, Cinnamon Teal, American Avocet, Le Conte's Sparrow, Double-crested Cormorant, Wood Duck
+
+
 2013: Adding random effects
 ========================================================
-
+* Nested sampling designs:
+  * Stops along a transect
+  * Quadrats within a site
+* Two easy, but suboptimal options:
+  * Could treat fine-scale samples as independent
+  * Could ignore fine-scale data
+* Random effects:
+  * ???
 
 
 
@@ -105,22 +152,9 @@ Contributions (2):
   * Partial observations
 	* Nearby observations
 	* Species similarities
-  
+* Model structure can mirror ecological theory
+
 Contributions (3):
 ========================================================
 * 312 species distribution models in 60 seconds
 
-
-End
-========================================================
-
-========================================================
-incremental: true
-# Species Assemblage Models (SAMs)
-</br>
-
-## Input: environmental data for a site (if available)
-
-</br>
-
-## Output: likely species compositions for that site

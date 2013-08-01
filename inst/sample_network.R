@@ -2,24 +2,32 @@ devtools::load_all()
 library(ggplot2)
 library(fastICA)
 load("../scrf/birds.Rdata")
+load("../scrf/stop.array.Rdata")
+
+stop.array = stop.array[rownames(route.presence.absence), colnames(route.presence.absence), ]
+stopifnot(
+  all.equal(t(apply(stop.array, 1, rowSums)) > 0, route.presence.absence)
+)
+stop.array = aperm(stop.array, c(1, 3, 2))
+
 
 ica = fastICA(poly(scale(env), degree = 2), n.comp = 20)
 
 projected.env = ica$S
 
-y = route.presence.absence[in.train, ]
+y = stop.array[in.train, , ]
 x = projected.env[in.train, ]
-n.out = ncol(y)
-n.hid = 50
+n.out = dim(y)[3]
+n.hid = 51
 n.bottleneck = 10
 n.in = ncol(x)
 n = nrow(y)
-mini.n = 2
+mini.n = dim(y)[2]
 
-momentum = 0.5
-n.importance.samples = 20
-random.effect.sd = 0.2
-lr = .001
+momentum = 0.9
+n.importance.samples = 2
+random.effect.sd = 0
+lr = .01
 
 w1 = matrix(0, nrow = ncol(x), ncol = n.hid)
 w1[,] = rnorm(length(w1), sd = .2) * (sample.int(2, length(w1), replace = TRUE) - 1L)
@@ -36,7 +44,7 @@ w2grads = array(dim = c(nrow(w2),ncol(w2),n.importance.samples))
 w3grads = array(dim = c(nrow(w3),ncol(w3),n.importance.samples))
 
 b1 = rep(0, n.hid)
-b3 = qlogis(colMeans(y))
+b3 = qlogis(apply(y, 3, mean))
 
 
 dw1 = dw2 = dw3 = 0
@@ -54,21 +62,22 @@ importance.errors = matrix(NA, nrow = mini.n, ncol = n.importance.samples)
 for(i in 1:maxit){
   
   
-  in.batch = sample.int(n, mini.n)
-  batch.x = x[in.batch, ]
-  batch.y = y[in.batch, ]
+  sitenum = sample.int(nrow(x), 1)
+  site.x = rep(x[sitenum, ], each = mini.n)
+  dim(site.x) = c(mini.n, n.in)
+  site.y = y[sitenum, , ]
   
   w1grad = w2grad = w3grad = 0
   
   for(j in 1:n.importance.samples){
     
-    h = sigmoid(batch.x %*% w1 %plus% b1)
+    h = sigmoid(site.x %*% w1 %plus% b1)
     bottleneck.h = h %*% w2 %plus% rnorm(n.bottleneck, sd = random.effect.sd)
     yhat = sigmoid(bottleneck.h %*% w3 %plus% b3)
     
-    importance.errors[ , j] = rowSums(crossEntropy(y = batch.y, yhat = yhat))
+    importance.errors[ , j] = rowSums(crossEntropy(y = site.y, yhat = yhat))
     
-    delta3 = crossEntropyGrad(y = batch.y, yhat = yhat) * sigmoidGrad(s = yhat)
+    delta3 = crossEntropyGrad(y = site.y, yhat = yhat) * sigmoidGrad(s = yhat)
     delta2 = delta3 %*% t(w3)
     delta1 = sigmoidGrad(s = h) * (delta2 %*% t(w2))
     
@@ -94,7 +103,7 @@ for(i in 1:maxit){
         n.hid = n.in, 
         n.out = n.hid, 
         delta = delta1,
-        h = batch.x
+        h = site.x
       )
     )
   }
@@ -121,8 +130,8 @@ for(i in 1:maxit){
   
   
   if(i%%100 == 0){
-    errors[i/100] = sum(colMeans(importance.errors) * importance.weights)
-    message(i)
+    errors[i/100] = round(sum(importance.errors * importance.weights))
+    message(paste(i, errors[i/100]))
     momentum = pmin(1 - 10/(10 + i/100), .8)
   }
   if(is.na(dw1[[1]])){stop("NAs")}
@@ -131,41 +140,14 @@ for(i in 1:maxit){
 # Rprof(NULL)
 # summaryRprof()
 
-niter = 1000
-yhats = array(dim = c(nrow(route.presence.absence[in.test, ]), ncol(route.presence.absence), niter))
-dimnames(yhats) = list(NULL, colnames(route.presence.absence), NULL)
-
-h = sigmoid(projected.env[in.test, ] %*% w1 %plus% b1)
-
-for(i in 1:niter){
-  bottleneck.h = h %*% w2 %plus% rnorm(n.bottleneck, sd = random.effect.sd)
-  yhats[,,i] = sigmoid(bottleneck.h %*% w3 %plus% b3)
-}
-
-yhat = apply(yhats, 2, rowMeans)
-
 h = sigmoid(projected.env[in.test, ] %*% w1 %plus% b1)
 bottleneck.h = h %*% w2
 yhat.mle = sigmoid(bottleneck.h %*% w3 %plus% b3)
 colnames(yhat.mle) = colnames(route.presence.absence)
 
 
-mean(colSums(crossEntropy(route.presence.absence[in.test, ], yhat.mle)))
-mean(colSums(crossEntropy(route.presence.absence[in.test, ], yhat)))
 
-spp = c("Chipping Sparrow", "Pine Siskin")
-sitenum = 3
-apply(t(yhats[sitenum,spp,]), 2, sd)
-plot(
-  t(yhats[sitenum,spp,]), 
-  xlim = c(0, 1), 
-  ylim = c(0,1), 
-  xaxs = "i", 
-  yaxs = "i", 
-  cex = .5
-)
-abline(0,1)
-points(matrix(yhat[sitenum, spp], ncol = 2), col = 4)
-points(matrix(yhat.mle[sitenum, spp], ncol = 2), col = 2)
 
-plot(1:length(errors) * 100, errors, type = "l")
+
+plot(errors[-1], type = "l")
+abline(lm(errors[-1] ~ I(2:200)), col = 2)
